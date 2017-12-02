@@ -1,4 +1,8 @@
 var scene, camera, renderer;
+var car;
+var WIDTH = window.innerWidth,
+    HEIGHT = window.innerHeight;
+
 var startTime	= Date.now();
 	init();
 	animate();
@@ -6,8 +10,6 @@ var startTime	= Date.now();
 function init()
 {
     scene = new THREE.Scene();
-    var WIDTH = window.innerWidth,
-        HEIGHT = window.innerHeight;
  
         console.log(WIDTH);
         console.log(HEIGHT);
@@ -49,7 +51,8 @@ function addObject(obj){
 function animate(){
 
     requestAnimationFrame(animate);
-
     renderer.render(scene, camera);   
     
 }
+
+
