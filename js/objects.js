@@ -58,3 +58,7 @@ function createCar(){
     }
     return car;
 }
+
+function getCarX(){ return car.globalPos[0]; }
+function getCarY(){ return car.globalPos[1]; }
+function getCarZ(){ return car.globalPos[2]; }
