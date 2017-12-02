@@ -3,7 +3,7 @@ function createCube(size_x,size_y,size_z){
     
     cube.position.y = 0.5;
     cube.position.x = 0.5;
-    cube.position.z = -10;
+    cube.position.z = -5;
     
     cube.setPosition = function(x,y,z){
         this.position.x = x;
@@ -15,6 +15,9 @@ function createCube(size_x,size_y,size_z){
         this.rotation.x = x;
         this.rotation.y = y;
         this.rotation.z = z;
+    }
+    cube.getPosition = function(){
+        return [this.position.x, this.position.y, this.position.z];
     }
     cube.setScale = function(x,y,z){
         this.scale.x = x;
@@ -72,7 +75,7 @@ function createQuad(size_x,size_y){
 
 
 function createTorus(radius, diameter){
-    var geom = new THREE.TorusGeometry(radius,diameter);
+    var geom = new THREE.TorusGeometry(radius,diameter,16,100);
     var mat = new THREE.MeshBasicMaterial({ color: 0xffff00});
     var torus = new THREE.Mesh(geom,mat);
     
@@ -101,6 +104,7 @@ function createTorus(radius, diameter){
         
         this.material = newMat;
     }
+    torus.rotateX(-Math.PI);
     
     return torus;
 }
