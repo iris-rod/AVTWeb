@@ -1,5 +1,8 @@
 var scene, camera, renderer;
 var car;
+var WIDTH = window.innerWidth,
+    HEIGHT = window.innerHeight;
+
 var startTime	= Date.now();
 	init();
 	animate();
@@ -7,8 +10,6 @@ var startTime	= Date.now();
 function init()
 {
     scene = new THREE.Scene();
-    var WIDTH = window.innerWidth,
-        HEIGHT = window.innerHeight;
  
         console.log(WIDTH);
         console.log(HEIGHT);
@@ -47,15 +48,11 @@ function drawCar(){
 function animate(){
 
     requestAnimationFrame(animate);
-	cube.rotation.x += 0.02;
-	cube.rotation.y += 0.0225;
-	cube.rotation.z += 0.0175;
-	
-
 	var dtime	= Date.now() - startTime;
-	cube.scale.x	= 1.0 + 0.3*Math.sin(dtime/300);
-	cube.scale.y	= 1.0 + 0.3*Math.sin(dtime/300);
-	cube.scale.z	= 1.0 + 0.3*Math.sin(dtime/300);
     renderer.render(scene, camera);   
     
 }
+
+//*****************************CAMERA****************************/
+
+
