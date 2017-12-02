@@ -33,26 +33,26 @@ function init()
         var light = new THREE.PointLight(0xffffff);
 		light.position.set(-100, 200, 100);
 		scene.add(light);    
-    
+        //var floor = createQuad(10,10);
+        //scene.add(floor);
+        var car = createCar();
+        addObject(car);
+        
 
-        var floor = createQuad(10,10);
-        scene.add(floor);
+}
+
+function addObject(obj){
+    obj.addToScene(scene);
 }
 
 /********************desenhar o carro**************************/
-function drawCar(){
-    var cube = createCube(10,10,10);
-}
 
 
 function animate(){
 
     requestAnimationFrame(animate);
-	var dtime	= Date.now() - startTime;
     renderer.render(scene, camera);   
     
 }
-
-//*****************************CAMERA****************************/
 
 
