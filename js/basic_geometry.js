@@ -1,5 +1,5 @@
 function createCube(size_x,size_y,size_z){
-    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshNormalMaterial());
+    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshPhongMaterial());
     
     cube.position.y = 0.5;
     cube.position.x = 0.5;
@@ -17,6 +17,7 @@ function createCube(size_x,size_y,size_z){
         this.rotation.z = z;
     }
     cube.getPosition = function(){
+        console.log(this.position.x);
         return [this.position.x, this.position.y, this.position.z];
     }
     cube.setScale = function(x,y,z){
@@ -64,21 +65,21 @@ function createQuad(size_x,size_y){
         tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1,1);
         
-        var newMat = new THREE.MeshBasicMaterial({color:0xffffff, map: tex});
+        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
         this.material = newMat;
     }
     
-    plane.rotateX( - Math.PI /3);
+    plane.rotateX( - Math.PI/2);
     return plane;
 }
 
 
 function createTorus(radius, diameter){
     var geom = new THREE.TorusGeometry(radius,diameter,16,100);
-    var mat = new THREE.MeshBasicMaterial({ color: 0xffff00});
+    var mat = new THREE.MeshPhongMaterial({ color: 0xffff00});
     var torus = new THREE.Mesh(geom,mat);
-    
+
     torus.setPosition = function(x,y,z){
         this.position.x = x;
         this.position.y = y;
@@ -100,18 +101,26 @@ function createTorus(radius, diameter){
         tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1,1);
         
-        var newMat = new THREE.MeshBasicMaterial({color:0xffffff, map: tex});
+        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
         this.material = newMat;
     }
+    
+    torus.getRotation = function(){
+        return [this.rotation.x,this.rotation.y,this.rotation.z];
+    }
+    
     torus.rotateX(-Math.PI);
+    torus.position.x = 0;
+    torus.position.y = 0;
+    torus.position.z = 0;
     
     return torus;
 }
 
 function createSphere(radius, wSeg, hSeg){
     var geom = new THREE.SphereGeometry(radius,wSeg,hSeg);
-    var mat  = new THREE.MeshBasicMaterial({color: 0x575a3f});
+    var mat  = new THREE.MeshPhongMaterial({color: 0x575a3f});
     var sphere = new THREE.Mesh(geom,mat);
  
     sphere.setPosition = function(x,y,z){
@@ -135,7 +144,7 @@ function createSphere(radius, wSeg, hSeg){
         tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1,1);
         
-        var newMat = new THREE.MeshBasicMaterial({color:0xffffff, map: tex});
+        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
         this.material = newMat;
     }
