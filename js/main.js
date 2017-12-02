@@ -1,4 +1,4 @@
-var scene, camera, renderer;
+var scene, camera, renderer, controls;
 var car;
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
@@ -20,6 +20,9 @@ function init()
         camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
 		camera.position.set(0,0,100);
 		scene.add(camera);
+    
+        controls = new THREE.OrbitControls(camera);
+        controls.update();
 		
 		window.addEventListener('resize', function(){
 			var WIDTH = window.innerWidth,
@@ -37,6 +40,7 @@ function init()
         //scene.add(floor);
         var car = createCar();
         addObject(car);
+        console.log(getCarX());
         
 
 }
@@ -51,6 +55,7 @@ function addObject(obj){
 function animate(){
 
     requestAnimationFrame(animate);
+    controls.update();
     renderer.render(scene, camera);   
     
 }

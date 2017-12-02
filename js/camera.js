@@ -1,5 +1,5 @@
-var incX = 2;
-var incY = 2;
+var incX = 100;
+var incY = 0;
 var incZ = 2;
 
 function initCameraType(cameraToInit)
@@ -19,24 +19,32 @@ function initCameraType(cameraToInit)
 
 function initFixedOrtho()
 {
-    console.log("fixed ortho");
     camera = new THREE.OrthographicCamera(-10,10,-10,10,-200,200);
     camera.position.set(0,0,100);
     scene.add(camera);
+    updateController();
 }
 
 function initFixedPerspective()
 {
-    console.log("fixed per");
     camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
     camera.position.set(0,0,100);
     scene.add(camera);
+    updateController();
 }
 
 function initMovingPerspective()
 {
-    console.log("moving");
     camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
-    camera.position.set(car.x + incX, car.y + incY, car.z + incZ);
+    console.log(getCarX());
+    camera.position.set(getCarX() + incX, getCarY() + incY, getCarZ() - incZ);
     scene.add(camera); 
+    updateController();
+}
+
+//update the camera being used in the controller
+function updateController()
+{
+    controls = new THREE.OrbitControls(camera);
+    controls.update();
 }
