@@ -1,4 +1,4 @@
-var incX = 100;
+var incX = 20;
 var incY = 0;
 var incZ = 2;
 
@@ -36,8 +36,7 @@ function initFixedPerspective()
 function initMovingPerspective()
 {
     camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
-    console.log(getCarX());
-    camera.position.set(getCarX() + incX, getCarY() + incY, getCarZ() - incZ);
+    camera.position.set(car.getCarX() + incX, car.getCarY() + incY,car.getCarZ() - incZ);
     scene.add(camera); 
     updateController();
 }

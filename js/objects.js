@@ -18,13 +18,12 @@ function createCar(){
     var wOffsetX = [1,1,2,2];
     car.body = createCube(5,5);
     var bodyPos = car.body.getPosition();
-    globalPos = bodyPos;
+    car.globalPos = bodyPos;
     for(var i = 0; i< 4; i++){
         car.wheels[i] = createTorus(2,0.5);
         car.wheels[i].setPosition(bodyPos[0]+wOffsetX[i],bodyPos[1],bodyPos[2]);
-        console.log(i);
     }
-    
+        
     car.setPosition = function(x,y,z){
         this.body.setPosition(x,y,z);
         for(i = 0; i < this.wheels.length(); i++){
@@ -56,9 +55,10 @@ function createCar(){
             scene.add(this.wheels[i]);
         }
     }
+    
+    car.getCarX = function() { return this.globalPos[0]; }
+    car.getCarY = function() { return this.globalPos[1]; }
+    car.getCarZ = function() { return this.globalPos[2]; }
+    
     return car;
 }
-
-function getCarX(){ return car.globalPos[0]; }
-function getCarY(){ return car.globalPos[1]; }
-function getCarZ(){ return car.globalPos[2]; }
