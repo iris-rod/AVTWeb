@@ -16,6 +16,9 @@ function checkKeyboardInput(keyPressed)
         case("Digit3"):     //moving perspective camera
             initCameraType(cameraType.MOV_PERSP);
             break;
+        case("Digit4"):     //stereo camera
+            initCameraType(cameraType.STEREO);
+            break;
     //**whatever**
     }
 }
