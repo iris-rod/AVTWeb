@@ -1,5 +1,6 @@
 var scene, camera, renderer, controls;
-var car;
+var car, light;
+var stereoOn = false;
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
 
@@ -31,7 +32,7 @@ function init()
 		});
         
         renderer.setClearColor("rgb(120, 0, 200)", 1);
-        var light = new THREE.PointLight(0xffffff);
+        light = new THREE.PointLight(0xffffff);
 		light.position.set(0, 0, 0);
 		scene.add(light);    
         //var floor = createQuad(10,10);
@@ -52,12 +53,26 @@ function addObject(obj){
 function animate(){
 
     requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera); 
+    if(stereoOn)
+      renderForStereo();  
+    else
+      renderForNonStereo();
+  //controls.update();
     updateHUD();
     
 }
 
+function renderForStereo()
+{
+  camera.lookAt( light.position);//car.globalPos );
+  effect.render( scene, camera );
+}
+
+function renderForNonStereo()
+{
+  renderer.render(scene, camera); 
+}
+/********************HUD display**************************/
 function initHUD()
 {
   document.getElementById("numberOfLives").innerHTML = initialNumberOfLives;
@@ -68,7 +83,7 @@ function initHUD()
   
 }
 
-//talvez user listener
+//talvez usar listener
 function updateHUD()
 {
   //document.addEventListener()
