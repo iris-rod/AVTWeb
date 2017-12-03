@@ -11,8 +11,6 @@ function init()
 {
     scene = new THREE.Scene();
  
-        console.log(WIDTH);
-        console.log(HEIGHT);
 		renderer = new THREE.WebGLRenderer({antialias:true});
 		renderer.setSize(WIDTH, HEIGHT);
 		document.body.appendChild(renderer.domElement);
@@ -34,15 +32,14 @@ function init()
         
         renderer.setClearColor("rgb(120, 0, 200)", 1);
         var light = new THREE.PointLight(0xffffff);
-		light.position.set(-100, 200, 100);
+		light.position.set(0, 0, 0);
 		scene.add(light);    
         //var floor = createQuad(10,10);
         //scene.add(floor);
         var car = createCar();
         addObject(car);
-        console.log(getCarX());
-        
-
+  
+      initHUD();
 }
 
 function addObject(obj){
@@ -56,8 +53,25 @@ function animate(){
 
     requestAnimationFrame(animate);
     controls.update();
-    renderer.render(scene, camera);   
+    renderer.render(scene, camera); 
+    updateHUD();
     
+}
+
+function initHUD()
+{
+  document.getElementById("numberOfLives").innerHTML = initialNumberOfLives;
+  document.getElementById("numberOfPoints").innerHTML = initialNumberOfPoints;
+  
+  LivesLeft = initialNumberOfLives;
+  currentPoints = initialNumberOfPoints;
+  
+}
+
+//talvez user listener
+function updateHUD()
+{
+  //document.addEventListener()
 }
 
 
