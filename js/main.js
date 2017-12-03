@@ -3,6 +3,10 @@ var scene, camera, renderer, controls;
 //objects
 var car, table;
 
+//lights
+var numCandles = 6;
+var candles = new Array(numCandles);
+
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
 
@@ -13,9 +17,7 @@ var startTime	= Date.now();
 function init()
 {
     scene = new THREE.Scene();
- 
-    console.log(WIDTH);
-    console.log(HEIGHT);
+
 	renderer = new THREE.WebGLRenderer({antialias:true});
 	renderer.setSize(WIDTH, HEIGHT);
 	document.body.appendChild(renderer.domElement);
@@ -36,14 +38,16 @@ function init()
 	});
         
     renderer.setClearColor("rgb(120, 0, 200)", 1);
-    var light = new THREE.PointLight(0xffffff,1,5000);
-	light.position.set(5, 2, 0);
-	scene.add(light);    
 
-    table = createTable();
+    drawCandles();
+    drawAmbientLight();
+    table = createTable(100,100);
     car = createCar();
+    
     addObject(car);
     addObject(table);
+    
+    
 
 }
 
@@ -51,8 +55,20 @@ function addObject(obj){
     obj.addToScene(scene);
 }
 
-/********************desenhar o carro**************************/
+/********************desenhar as point lights**************************/
+function drawCandles(){
+    for(var i = 0; i < numCandles; i++){
+        candles[i] = createPointLight(0xffffff,1,10);
+        candles[i].setPosition(Math.random()*50,1,Math.random()*50);
+        scene.add(candles[i]);
+    }
+}
 
+/********************desenhar a directional light ******************************/
+function drawAmbientLight(){
+    var directional = createDirectionalLight(0xffffff,0.6);
+    scene.add(directional);
+}
 
 function animate(){
 

@@ -1,5 +1,5 @@
 function createCube(size_x,size_y,size_z){
-    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshPhongMaterial());
+    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshPhongMaterial({color: 0x0000FF, side: THREE.DoubleSide}));
     
     cube.position.y = 0.5;
     cube.position.x = 0.5;
@@ -31,16 +31,20 @@ function createCube(size_x,size_y,size_z){
         tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1,1);
         
-        var newMat = new THREE.MeshBasicMaterial({color:0xffffff, map: tex});
+        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
         this.material = newMat;
+    }
+    cube.setTransparent = function(opacity){
+        this.material.transparent = true;
+        this.opacity = opacity;
     }
     return cube;
 }
 
 function createQuad(size_x,size_y){
     var geom = new THREE.PlaneGeometry(size_x,size_y);
-    var mat = new THREE.MeshBasicMaterial({ color: 0x0000FF, side: THREE.DoubleSide }); 
+    var mat = new THREE.MeshPhongMaterial({ color: 0x0000FF, side: THREE.DoubleSide }); 
     
     var plane = new THREE.Mesh(geom, mat);
     
@@ -68,6 +72,12 @@ function createQuad(size_x,size_y){
         var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
         this.material = newMat;
+    }
+    
+
+    plane.setTransparent = function(opacity){
+        this.material.transparent = true;
+        this.opacity = opacity;
     }
     
     plane.rotateX( - Math.PI/2);
@@ -110,6 +120,11 @@ function createTorus(radius, diameter){
         return [this.rotation.x,this.rotation.y,this.rotation.z];
     }
     
+    torus.setTransparent = function(opacity){
+        this.material.transparent = true;
+        this.opacity = opacity;
+    }
+    
     torus.rotateX(-Math.PI);
     torus.position.x = 0;
     torus.position.y = 0;
@@ -148,5 +163,13 @@ function createSphere(radius, wSeg, hSeg){
         
         this.material = newMat;
     }
+    
+    sphere.setTransparent = function(opacity){
+        this.material.transparent = true;
+        this.material.opacity = opacity;
+        this.material.depthWrite = false;
+    }
+    
+    return sphere;
     
 }

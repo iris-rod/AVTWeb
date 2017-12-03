@@ -20,10 +20,12 @@ var table = {
 };
 
 function createCar(){
+    var target = null;
     var size = 5;
     var offset = size/2;
     var wOffsetX = [offset,offset,-offset,-offset];
     var wOffsetZ = [offset,-offset,offset,-offset];
+    var lOffsetZ = [-1.5,1.5];
     
     car.body = createCube(size,size,size);
     car.body.setPosition(0,size/2+1,0);
@@ -40,7 +42,14 @@ function createCar(){
     
     //create and add headlights
     for(var i = 0; i< 2; i++){
-        car.headlights[i] = 
+        target = createSphere(0,0,0);
+        target.setPosition(20,0,0);
+        target.setTransparent(0);
+        car.headlights[i] = createSpotLight(0xffffff,1,6000);
+        car.headlights[i].setPosition(0,2,lOffsetZ[i]);
+        car.headlights[i].target = target;
+        car.body.add(car.headlights[i]);
+        car.body.add(target);
     }
     
     car.setPosition = function(x,y,z){
@@ -110,8 +119,8 @@ function createCar(){
     return car;
 }
 
-function createTable() {
-    table.mesh = createQuad(50,50);
+function createTable(size_x,size_y) {
+    table.mesh = createQuad(size_x,size_y);
     table.mesh.setPosition(0,0,0);
     table.setPosition = function(x,y,z){
         this.mesh.setPosition(x,y,z);

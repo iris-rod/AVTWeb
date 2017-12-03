@@ -28,22 +28,18 @@ function checkKeyboardInput(keyPressed)
         case("KeyQ"):
             move_front = true;
             move_back = false;
-            //car.move(DIRECTIONS.FRONT);
             break;
         case("KeyA"):
             move_front = false;
             move_back = true;
-            //car.move(DIRECTIONS.BACK);
             break;
         case("KeyP"):
             rot_left = false;
             rot_right = true;
-            //car.rotate(DIRECTIONS.RIGHT);
             break;
         case("KeyO"):
             rot_left = true;
             rot_right = false;
-            //car.rotate(DIRECTIONS.LEFT);
             break;
     }
 }
