@@ -1,5 +1,9 @@
 function createCube(size_x,size_y,size_z){
-    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshNormalMaterial());
+    
+  var geometry = new THREE.CubeGeometry(size_x,size_y,size_z);
+  var mate = new THREE.MeshBasicMaterial({ color: 0x00ffff});
+  mate.fog = true;
+  var cube = new THREE.Mesh(geometry, mate);
     
     cube.position.y = 0.5;
     cube.position.x = 0.5;

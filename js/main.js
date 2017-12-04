@@ -40,7 +40,9 @@ function init()
         var car = createCar();
         addObject(car);
   
-      initHUD();
+        initHUD();
+        setFog();
+       
 }
 
 function addObject(obj){
@@ -49,6 +51,11 @@ function addObject(obj){
 
 /********************desenhar o carro**************************/
 
+function setFog()
+{
+   scene.fog = new THREE.Fog(0xffffff, 0, 500);
+   scene.fog.color.setHSL( 0.4, 0.4, 0.4 ); //fogColor
+}
 
 function animate(){
 
