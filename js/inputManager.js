@@ -41,6 +41,17 @@ function checkKeyboardInput(keyPressed)
             rot_left = true;
             rot_right = false;
             break;
+        case("KeyN"):
+            directionalOn = !directionalOn;
+            break;
+        case("KeyC"):
+            candlesOn = !candlesOn;
+            break;
+        case("KeyH"):
+            headlightsOn = !headlightsOn;
+            break;
+        
+        
     }
 }
 

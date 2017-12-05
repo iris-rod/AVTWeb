@@ -10,6 +10,14 @@ function createPointLight(color,intensity,dist){
         this.position.z = z;
     }
     
+    light.getPosition = function(){
+        return [this.position.x,this.position.y,this.position.z];
+    }
+    
+    light.getPositionInVector = function(){
+        return new THREE.Vector4(this.position.x,this.position.y,this.position.z,1.0);
+    }
+    
     light.rotate = function(axis,radians){
         this.setRotationFromAxisAngle(axis,radians);
     }
@@ -39,6 +47,14 @@ function createSpotLight(color,intensity,dist){
         this.position.z = z;
     }
     
+    light.getPositionInVector = function(){
+        return new THREE.Vector4(this.position.x,this.position.y,this.position.z,1.0);
+    }
+    
+    light.getPosition = function(){
+        return [this.position.x,this.position.y,this.position.z];
+    }
+    
     light.rotate = function(axis,radians){
         this.setRotationFromAxisAngle(axis,radians);
     }
@@ -52,10 +68,19 @@ function createSpotLight(color,intensity,dist){
 
 function createDirectionalLight(color,intensity){
     var light = new THREE.DirectionalLight(color,intensity);
+    light.position.set(0,2,0);
     light.setPosition = function(x,y,z){
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+    }
+    
+    light.getPosition = function(){
+        return [this.position.x,this.position.y,this.position.z];
+    }
+    
+    light.getPositionInVector = function(){
+        return new THREE.Vector4(this.position.x,this.position.y,this.position.z,1.0);
     }
     
     light.rotate = function(axis,radians){

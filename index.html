@@ -7,6 +7,99 @@
 </head>
 <body style="margin: 0;">
   <script src="js/three.min.js"></script>
+    <script id="vertexShader" type="x-shader/x-vertex">
+        varying vec2 vUv;
+        
+        varying vec3 norm;
+        varying vec3 eye;
+        varying vec4 pos;
+        
+        void main() {
+            vUv = uv;
+            pos = modelViewMatrix * vec4(position,1.0);
+            //norm = normalize(modelMatrix * vec4(normal,.0)).xyz;
+            norm = normalMatrix * normal;
+            eye = vec3(-pos);
+            gl_Position =   projectionMatrix * 
+                                modelViewMatrix * 
+                                vec4(position,1.0);
+        }
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        #define TOTAL_LIGHTS 9
+        uniform sampler2D texture1;
+        uniform sampler2D texture2;
+        
+        uniform bool spotOn;
+        uniform bool directionalLightOn;
+        uniform bool pointLightOn;        
+
+        varying vec2 vUv;
+        varying vec3 norm;
+        varying vec3 eye;
+        varying vec4 pos;       
+        
+        
+        struct PointLight{
+            vec3 color;
+            vec3 position;
+            float distance;
+        };
+        uniform float pointLightIntensity;
+        uniform PointLight pointLights[NUM_POINT_LIGHTS];  
+        
+        struct DirectionalLight{
+            vec3 color;
+            vec3 direction;
+        };
+        uniform vec3 dirLightPos;
+        uniform float dirLightIntensity;
+        uniform DirectionalLight directionalLights[NUM_DIR_LIGHTS];
+        
+        void main() {
+            vec4 texel = texture2D(texture1,vUv);
+            vec4 texel1 = texture2D(texture2,vUv);
+
+            
+            float intensity_point = 0.;
+            vec4 addedLights = vec4(0.5,0.5,0.5, 1.0);
+            vec4 spec_point = vec4(1);
+            
+            float intensity_dir = 0.;
+            vec4 spec_dir = vec4(1);
+            
+            for(int l = 0; l < NUM_POINT_LIGHTS; l++) {
+                vec3 lightDirection = normalize( pointLights[l].position-vec3(pos));
+                vec3 n = normalize(norm);
+                
+                intensity_point += max(dot(n,lightDirection), 0.0)*pointLightIntensity;
+                vec3 h = normalize(lightDirection + (-vec3(pos)));
+                float intSpec = max(dot(h,n), 0.0);
+                spec_point += pow(intSpec, 0.);
+            }
+            
+            for(int l = 0; l < NUM_DIR_LIGHTS; l++) {
+                vec3 lightDirection = dirLightPos;//normalize(vec3(pos) - directionalLights[0].position);
+                vec3 n = normalize(norm);
+                
+                intensity_dir += max(dot(norm,lightDirection),0.0)*dirLightIntensity;
+                vec3 h = normalize(lightDirection + (-vec3(pos)));
+                float intSpec = max(dot(h,n),0.0);
+                spec_dir += pow(intSpec,1.);
+                //addedLights.rgb += clamp(dot(-lightDirection, norm), 0.0, 1.0) * color*10.;
+            }
+            
+            float total_intensity = intensity_point + intensity_dir;
+            vec4 total_spec = spec_point + spec_dir;
+            gl_FragColor = texel * texel1 * total_intensity;// + total_spec;
+            
+		    //gl_FragColor =max(total_intensity * texel * texel1 + total_spec,vec4(1));
+            
+            //gl_FragColor =max(total_intensity * texel * texel1 + total_spec,0.1*(total_intensity * texel * texel1 + total_spec));
+            
+        }
+    </script>
   <script src="js/globalConstAndEnums.js"></script>
   <script src="js/OrbitControls.js"></script>
   <script src="js/basic_geometry.js"></script>

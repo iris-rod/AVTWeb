@@ -28,6 +28,7 @@ function createCar(){
     var lOffsetZ = [-1.5,1.5];
     
     car.body = createCube(size,size,size);
+    car.body.name = "car-body";
     car.body.setPosition(0,size/2+1,0);
     var bodyPos = car.body.getPosition();
     car.globalPos = bodyPos;
@@ -37,6 +38,7 @@ function createCar(){
         car.wheels[i] = createTorus(1,0.2);
         car.wheels[i].setTexture("textures/stone.jpg");
         car.wheels[i].setPosition(bodyPos[0]+wOffsetX[i],bodyPos[1]-size-0.8,bodyPos[2]+wOffsetZ[i]);
+        car.wheels[i].name = "car-wheel-"+i.toString();
         car.body.add(car.wheels[i]);
     }
     
@@ -48,6 +50,7 @@ function createCar(){
         car.headlights[i] = createSpotLight(0xffffff,1,6000);
         car.headlights[i].setPosition(0,2,lOffsetZ[i]);
         car.headlights[i].target = target;
+        car.headlights[i].name = "headlights";
         car.body.add(car.headlights[i]);
         car.body.add(target);
     }
@@ -101,6 +104,15 @@ function createCar(){
         this.globalPos = this.body.getPosition();
     }
     
+    car.checkHeadlights = function(trigger){
+        if(!trigger) this.body.remove(this.body.getObjectByName("headlights"));
+        else {
+            for(var i = 0; i < 2 ; i++){
+                this.body.add(this.headlights[i]);
+            }
+        }
+    }
+    
     car.addToScene = function(scene){
         scene.add(this.body);
     }
@@ -121,7 +133,9 @@ function createCar(){
 
 function createTable(size_x,size_y) {
     table.mesh = createQuad(size_x,size_y);
+    table.mesh.name = "table";
     table.mesh.setPosition(0,0,0);
+    
     table.setPosition = function(x,y,z){
         this.mesh.setPosition(x,y,z);
     }
@@ -137,5 +151,8 @@ function createTable(size_x,size_y) {
     table.setTexture = function(path){
         this.mesh.setTexture(path);
     }
+
+    
+    
     return table;
 }

@@ -1,17 +1,24 @@
 var scene, camera, renderer, controls;
 
+//shaders
+var uniforms;
+
 //objects
 var car, table;
 
 //lights
 var numCandles = 6;
+var numTotalLights = 9;
 var candles = new Array(numCandles);
+var directional = null;
+var headlightsOn = true, directionalOn = true, candlesOn = true;
+var l_posS, l_spotDirS, l_cutoffS, types;
 
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
 
-var startTime	= Date.now();
 	init();
+var startTime	= Date.now();
 	animate();
     
 function init()
@@ -39,34 +46,47 @@ function init()
         
     renderer.setClearColor("rgb(120, 0, 200)", 1);
 
-    drawCandles();
-    drawAmbientLight();
-    table = createTable(100,100);
+    initCandles();
+    initDirectionalLight();
     car = createCar();
+    setLightValuesForMaterial();
+    table = createTable(100,100);
     
-    addObject(car);
-    addObject(table);
+    drawCandles();
+    drawDirectionalLight();
+    drawObject(car);
+    drawObject(table);
     
     
 
 }
 
-function addObject(obj){
+function drawObject(obj){
     obj.addToScene(scene);
 }
 
-/********************desenhar as point lights**************************/
-function drawCandles(){
+/********************point lights**************************/
+function initCandles(){
     for(var i = 0; i < numCandles; i++){
         candles[i] = createPointLight(0xffffff,1,10);
         candles[i].setPosition(Math.random()*50,1,Math.random()*50);
+        candles[i].name = "candles";
+    }
+}
+
+function drawCandles(){
+    for(var i = 0; i < numCandles; i++){
         scene.add(candles[i]);
     }
 }
 
 /********************desenhar a directional light ******************************/
-function drawAmbientLight(){
-    var directional = createDirectionalLight(0xffffff,0.6);
+function initDirectionalLight(){
+    directional = createDirectionalLight(0xffffff,0.6);
+    directional.name = "directional";
+}
+
+function drawDirectionalLight(){
     scene.add(directional);
 }
 
@@ -75,9 +95,39 @@ function animate(){
     requestAnimationFrame(animate);
     controls.update();
     checkMovements();
+    checkLights();
     renderer.render(scene, camera);  
     
     
+}
+
+function remove(name){
+    if(name != "headlights")
+    scene.remove(scene.getObjectByName(name));
+    else car.checkHeadlights(false);
+}
+
+function add(name){
+    switch(name){
+        case "headlights":
+            car.checkHeadlights(true);
+            break;
+        case "directional":
+            drawDirectionalLight();
+            break;
+        case "candles":
+            drawCandles();
+            break;
+    }
+}
+
+function checkLights(){
+    if(!headlightsOn) remove("headlights");
+    else add("headlights");
+    if(!directionalOn) remove("directional");
+    else add("directional");
+    if(!candlesOn) remove("candles");
+    else add("candles");
 }
 
 function checkMovements(){
