@@ -75,11 +75,13 @@ function checkKeyboardOutput(keyUp)
         case("KeyP"):
             rot_left = false;
             rot_right = false;
+            canLaunch = true;
             //car.rotate(DIRECTIONS.RIGHT);
             break;
         case("KeyO"):
             rot_left = false;
             rot_right = false;
+            canLaunch = true;
             //car.rotate(DIRECTIONS.LEFT);
             break;
     }

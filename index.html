@@ -8,59 +8,87 @@
 <body style="margin: 0;">
   <script src="js/three.min.js"></script>
     <script id="vertexShader" type="x-shader/x-vertex">
-        varying vec2 vUv;
-        
+        varying vec2 vUv;        
         varying vec3 norm;
         varying vec3 eye;
         varying vec4 pos;
         
+        varying vec3 t;
+        varying vec3 b;
+        varying vec3 n;  
+        
+        uniform vec4 tangent;
+        
         void main() {
             vUv = uv;
             pos = modelViewMatrix * vec4(position,1.0);
-            //norm = normalize(modelMatrix * vec4(normal,.0)).xyz;
             norm = normalMatrix * normal;
             eye = vec3(-pos);
+            
+            n = normalize(normalMatrix * normal.xyz);
+            t = normalize(normalMatrix * tangent.xyz);
+            b = tangent.w * cross(n,t);
+            
             gl_Position =   projectionMatrix * 
                                 modelViewMatrix * 
                                 vec4(position,1.0);
+                                
         }
     </script>
 
     <script id="fragmentShader" type="x-shader/x-fragment">
         #define TOTAL_LIGHTS 9
+        #define POINT_LIGHTS 6
         uniform sampler2D texture1;
         uniform sampler2D texture2;
+        uniform sampler2D textureBump;
         
-        uniform bool spotOn;
-        uniform bool directionalLightOn;
-        uniform bool pointLightOn;        
+        uniform int spotOn;
+        uniform int directionalLightOn;
+        uniform int pointLightOn;  
+        uniform int texMode;
 
         varying vec2 vUv;
         varying vec3 norm;
         varying vec3 eye;
-        varying vec4 pos;       
+        varying vec4 pos;
         
+        varying vec3 t;
+        varying vec3 b;
+        varying vec3 n; 
         
+        #if NUM_POINT_LIGHTS > 0
         struct PointLight{
             vec3 color;
             vec3 position;
             float distance;
         };
-        uniform float pointLightIntensity;
         uniform PointLight pointLights[NUM_POINT_LIGHTS];  
+        #endif
+        uniform float pointLightIntensity;
         
-        struct DirectionalLight{
+        #if NUM_SPOT_LIGHTS > 0
+        struct SpotLight{
             vec3 color;
+            vec3 position;
+            float distance;
             vec3 direction;
         };
+        uniform SpotLight spotLights[NUM_SPOT_LIGHTS];  
+        #endif
+        uniform float spotLightIntensity;
+        uniform vec3 spotTarget;
+        uniform float angle;
+        
         uniform vec3 dirLightPos;
         uniform float dirLightIntensity;
-        uniform DirectionalLight directionalLights[NUM_DIR_LIGHTS];
         
         void main() {
             vec4 texel = texture2D(texture1,vUv);
-            vec4 texel1 = texture2D(texture2,vUv);
-
+            vec3 texelBump = 2.0*texture2D(textureBump,vUv).rgb - 1.0;
+            texelBump = normalize(texelBump);
+            
+            float intensity_spot = 0.;
             
             float intensity_point = 0.;
             vec4 addedLights = vec4(0.5,0.5,0.5, 1.0);
@@ -69,39 +97,123 @@
             float intensity_dir = 0.;
             vec4 spec_dir = vec4(1);
             
-            for(int l = 0; l < NUM_POINT_LIGHTS; l++) {
-                vec3 lightDirection = normalize( pointLights[l].position-vec3(pos));
-                vec3 n = normalize(norm);
-                
-                intensity_point += max(dot(n,lightDirection), 0.0)*pointLightIntensity;
-                vec3 h = normalize(lightDirection + (-vec3(pos)));
-                float intSpec = max(dot(h,n), 0.0);
-                spec_point += pow(intSpec, 0.);
+            if(spotOn > 0){
+                for(int l = 0; l < NUM_SPOT_LIGHTS; l++) {
+                    vec3 aux = normalize( spotLights[l].position-vec3(pos));
+                    vec3 lightDirection = aux;
+                    
+                    if(texMode ==2){
+                        lightDirection.x = dot(aux, t);
+                        lightDirection.y = dot(aux, b);
+                        lightDirection.z = dot(aux, n);
+                        lightDirection = normalize(lightDirection);
+                    }
+                    
+                    vec3 n = normalize(norm);
+                    vec3 s = normalize(-spotTarget);
+                    
+                    if(acos(dot(s,lightDirection)) < angle){
+                        intensity_point += max(dot(n,lightDirection), 0.0)*spotLightIntensity;
+                    }
+                    if(texMode == 2){
+                        vec3 halfVector = vec3(1);
+                        vec3 h = normalize(aux + (-vec3(pos)));
+                        halfVector.x = dot(h, t);
+                        halfVector.y = dot(h, b);
+                        halfVector.z = dot(h, n);
+                        halfVector = normalize(halfVector);
+                        
+                        float intSpec = max(dot(halfVector,texelBump), 0.0);
+                        spec_point += pow(intSpec, 0.);
+                    }
+                    else{
+                        vec3 h = normalize(lightDirection + (-vec3(pos)));
+                        float intSpec = max(dot(h,n), 0.0);
+                        spec_point += pow(intSpec, 0.);
+                    }
+                }
             }
             
-            for(int l = 0; l < NUM_DIR_LIGHTS; l++) {
-                vec3 lightDirection = dirLightPos;//normalize(vec3(pos) - directionalLights[0].position);
-                vec3 n = normalize(norm);
-                
-                intensity_dir += max(dot(norm,lightDirection),0.0)*dirLightIntensity;
-                vec3 h = normalize(lightDirection + (-vec3(pos)));
-                float intSpec = max(dot(h,n),0.0);
-                spec_dir += pow(intSpec,1.);
-                //addedLights.rgb += clamp(dot(-lightDirection, norm), 0.0, 1.0) * color*10.;
+            
+            if(pointLightOn > 0){
+                for(int l = 0; l < NUM_POINT_LIGHTS; l++) {
+                    vec3 aux = normalize( pointLights[l].position-vec3(pos));
+                    vec3 lightDirection = aux;
+                    
+                   if(texMode ==2){
+                        lightDirection.x = dot(aux, t);
+                        lightDirection.y = dot(aux, b);
+                        lightDirection.z = dot(aux, n);
+                        lightDirection = normalize(lightDirection);
+                    }
+                    vec3 n = normalize(norm);
+
+                    intensity_point += max(dot(n,lightDirection), 0.0)*pointLightIntensity;
+                    if(texMode == 2){
+                        vec3 halfVector = vec3(1);
+                        vec3 h = normalize(aux + (-vec3(pos)));
+                        halfVector.x = dot(h, t);
+                        halfVector.y = dot(h, b);
+                        halfVector.z = dot(h, n);
+                        halfVector = normalize(halfVector);
+                        
+                        float intSpec = max(dot(halfVector,texelBump), 0.0);
+                        spec_point += pow(intSpec, 0.);
+                    }
+                }
+            }
+            
+            if(directionalLightOn > 0){
+                for(int l = 0; l < NUM_DIR_LIGHTS; l++) {
+                    vec3 aux = normalize( dirLightPos-vec3(pos));
+                    vec3 lightDirection = aux;
+                    
+                    if(texMode ==2){
+                        lightDirection.x = dot(aux, t);
+                        lightDirection.y = dot(aux, b);
+                        lightDirection.z = dot(aux, n);
+                        lightDirection = normalize(lightDirection);
+                    }
+                    vec3 n = normalize(norm);
+
+                    intensity_dir += max(dot(n,lightDirection),0.0)*dirLightIntensity;
+                    if(texMode == 2){
+                        vec3 halfVector = vec3(1);
+                        vec3 h = normalize(aux + (-vec3(pos)));
+                        halfVector.x = dot(h, t);
+                        halfVector.y = dot(h, b);
+                        halfVector.z = dot(h, n);
+                        halfVector = normalize(halfVector);
+                        
+                        float intSpec = max(dot(halfVector,texelBump), 0.0);
+                        spec_point += pow(intSpec, 0.);
+                    }
+                    else{
+                        vec3 h = normalize(lightDirection + (-vec3(pos)));
+                        float intSpec = max(dot(h,n),0.0);
+                        spec_dir += pow(intSpec,0.);
+                    }
+                }
             }
             
             float total_intensity = intensity_point + intensity_dir;
             vec4 total_spec = spec_point + spec_dir;
-            gl_FragColor = texel * texel1 * total_intensity;// + total_spec;
-            
-		    //gl_FragColor =max(total_intensity * texel * texel1 + total_spec,vec4(1));
-            
-            //gl_FragColor =max(total_intensity * texel * texel1 + total_spec,0.1*(total_intensity * texel * texel1 + total_spec));
-            
+            vec4 color = vec4(0);
+            if(texMode == 1){
+                vec4 texel1 = texture2D(texture2,vUv);
+                color = max(texel * texel1 * total_intensity, texel*texel1*0.2);                
+                gl_FragColor = vec4(color.rgb,0.4);
+            }
+            else if(texMode == 2){
+                color = max(texel*total_intensity , texel*0.2 );
+                gl_FragColor = color;
+            }
         }
     </script>
+    
   <script src="js/globalConstAndEnums.js"></script>
   <script src="js/OrbitControls.js"></script>
+  <script src="js/TGALoader.js"></script>
   <script src="js/basic_geometry.js"></script>
   <script src="js/lights.js"></script>
   <script src="js/objects.js"></script>

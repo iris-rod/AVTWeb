@@ -1,7 +1,11 @@
 var lights;
 
 function createCube(size_x,size_y,size_z){
-    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshPhongMaterial({color: 0x0000FF, side: THREE.DoubleSide}));
+    var cube = new THREE.Mesh(new THREE.CubeGeometry(size_x,size_y,size_z), new THREE.MeshPhongMaterial({
+        color: 0x00FFFF, 
+        side: THREE.DoubleSide,
+        castShadow: true,
+        receiveShadow: true}));
     
     cube.position.y = 0.5;
     cube.position.x = 0.5;
@@ -19,7 +23,6 @@ function createCube(size_x,size_y,size_z){
         this.rotation.z = z;
     }
     cube.getPosition = function(){
-        console.log(this.position.x);
         return [this.position.x, this.position.y, this.position.z];
     }
     cube.setScale = function(x,y,z){
@@ -37,6 +40,126 @@ function createCube(size_x,size_y,size_z){
         
         this.material = newMat;
     }
+    
+    cube.setNormalMap = function(pathNormal, pathTex){
+        var bumpTex = new THREE.ImageUtils.loadTexture(pathNormal);
+        var tex = new THREE.ImageUtils.loadTexture(pathTex);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(1,1);
+        //calculate tangents
+        var tan1 = new Array(this.geometry.vertices.length * 2);
+        var tan2 = new Array(this.geometry.vertices.length * 2);
+        var normals = new Array(this.geometry.vertices.length*2);
+        var tangents = new Array(this.geometry.vertices.length);
+        for(var i = 0; i<this.geometry.faces.length; i++){
+            var face = this.geometry.faces[i];
+            var ind1 = face.a;
+            var ind2 = face.b;
+            var ind3 = face.c;
+            
+            var v1 = this.geometry.vertices[ind1];
+            var v2 = this.geometry.vertices[ind2];
+            var v3 = this.geometry.vertices[ind3];
+            
+            var uv1 = this.geometry.faceVertexUvs[0][i][0];
+            var uv2 = this.geometry.faceVertexUvs[0][i][1];
+            var uv3 = this.geometry.faceVertexUvs[0][i][2];
+            
+            var x1 = v2.x - v1.x;
+            var x2 = v3.x - v1.x;
+            var y1 = v2.y - v1.y;
+            var y2 = v3.y - v1.y;
+            var z1 = v2.z - v1.z;
+            var z2 = v3.z - v1.z;
+            
+            var s1 = uv2.x - uv1.x;
+            var s2 = uv3.x - uv1.x;
+            var t1 = uv2.y - uv1.y;
+            var t2 = uv3.y - uv1.y;
+            
+            var r = 1.0/(s1*t2 - s2*t1);
+            
+            var sdir = new THREE.Vector3((t2*x1 - t1*x2)*r,
+                                         (t2*y1 - t1*y2)*r,
+                                         (t2*z1 - t1*z2)*r);
+            var tdir = new THREE.Vector3((s1*x2 - s2*x1)*r,
+                                         (s1*y2 - s2*y1)*r,
+                                         (s1*z2 - s2*z1)*r);
+            if(tan1[ind1] == null) tan1[ind1] = sdir;
+            else tan1[ind1].add(sdir);
+            if(tan1[ind2] == null) tan1[ind2] = sdir;
+            else tan1[ind2].add(sdir);
+            if(tan1[ind3] == null) tan1[ind3] = sdir;
+            else tan1[ind3].add(sdir);
+            
+            if(tan2[ind1] == null) tan2[ind1] = tdir;
+            else tan2[ind1].add(sdir);
+            if(tan2[ind2] == null) tan2[ind2] = tdir;
+            else tan2[ind2].add(sdir);
+            if(tan2[ind3] == null) tan2[ind3] = tdir;
+            else tan2[ind3].add(sdir);
+            
+            //calculate normals
+            var faceNormal = this.geometry.faces[i].normal;
+            
+            if(normals[ind1] == null) normals[ind1] = faceNormal;
+            else normals[ind1].add(faceNormal);
+            if(normals[ind2] == null) normals[ind2] = faceNormal;
+            else normals[ind2].add(faceNormal);
+            if(normals[ind3] == null) normals[ind3] = faceNormal;
+            else normals[ind3].add(faceNormal);
+        }
+        
+        for(var i = 0; i < this.geometry.vertices.length; i++){
+            var n = normals[i];
+            var t = tan1[i];
+            
+            //gram-shmidt orthogalize
+            var v = (t.sub(n).multiplyScalar(n.dot(t))).normalize();
+            
+            //handedness
+            v.w = (n.cross(t).dot(tan2[i]) < 0.0) ? -1.0 : 1.0;
+            
+            tangents[i] = v;
+        }
+        
+        
+        var uniforms = THREE.UniformsUtils.merge([{
+            texture1: {type: 't', value: null},
+            textureBump: {type: 't', value: null},
+            dirLightPos: {value: directional.getPositionInVector()},
+            dirLightIntensity:{type: '1f', value:directional.intensity},
+            pointLightIntensity: {type: '1f', value: candles[0].intensity},
+            spotOn: {type: '1i', value:1},
+            directionalLightOn: {type: '1i', value:1},
+            pointLightOn: {type: '1i', value:1},
+            spotTarget: {value: car.getHeadlightsTarget()},
+            angle: {value: car.headlights[0].angle},
+            spotLightIntensity:{type: '1f',value: 6.},
+            texMode: {type: '1i', value:2},
+            tangent: {value: tangents[0]}
+            },                                   
+            
+            THREE.UniformsLib[ "lights" ]
+            
+        ]);
+        
+        var vertexShader = document.getElementById('vertexShader').innerHTML;
+        var fragmentShader = document.getElementById('fragmentShader').innerHTML;
+        
+        this.material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
+            lights: true
+        });
+        
+        this.material.uniforms.texture1.value =new THREE.ImageUtils.loadTexture(pathTex);
+        this.material.uniforms.textureBump.value =new THREE.ImageUtils.loadTexture(pathNormal);
+        
+    }
+
     cube.setTransparent = function(opacity){
         this.material.transparent = true;
         this.opacity = opacity;
@@ -44,118 +167,71 @@ function createCube(size_x,size_y,size_z){
     return cube;
 }
 
-function createQuad(size_x,size_y){
-    var tex = new THREE.TextureLoader().load("textures/stone.jpg");
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1,1);
-    var geom = new THREE.PlaneGeometry(size_x,size_y);
-    var mat = new THREE.MeshPhongMaterial({ color: 0xffffFF, side: THREE.DoubleSide, map: tex }); 
+function createQuad(size_x,size_y,simple){
+    this.tex = new THREE.TextureLoader().load("textures/stone.jpg");
+    this.tex.wrapS = THREE.RepeatWrapping;
+    this.tex.wrapT = THREE.RepeatWrapping;
+    this.tex.repeat.set(1,1);
+    this.geom = new THREE.PlaneGeometry(size_x,size_y);
+    this.mat = new THREE.MeshBasicMaterial( { color: 0x0000ff, colorWrite: false,
+        castShadow: true,
+        receiveShadow: true} );
     
-    /*    
-    var materials = [];
-    var tex = new THREE.TextureLoader().load("textures/stone.jpg");
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1,1);
-    
-    var tex1 = new THREE.TextureLoader().load("textures/water.jpg");
-    tex1.wrapS = THREE.RepeatWrapping;
-    tex1.wrapT = THREE.RepeatWrapping;
-    tex1.repeat.set(1,1);
-    
-    materials.push(new THREE.MeshPhongMaterial({color:0xffffff, map: tex1}));
-    materials.push(new THREE.MeshPhongMaterial({color:0xffffff, map: tex}));
-
-    var material = new THREE.MeshFaceMaterial(materials);
-    */
-    
-    uniforms =//{ 
-        THREE.UniformsUtils.merge(
-            [THREE.UniformsLib['lights'],
-            {
-            texture1: { type: 't', value: null},
-            texture2: { type: 't', value: null},
-            lightIntensiy: {type: 'f', value: 10.0}
-        /*
-        spotOn: { value: true},
-        pointOn: { value: true},
-        directionalLightOn: { value: true},
-        Light: { value:
-                [
-                    lights[0],
-                    lights[1],
-                    lights[2],
-                    lights[3],
-                    lights[4],
-                    lights[5],
-                    lights[6],
-                    lights[7],
-                    lights[8]
-                ]
-            //{
-            //l_pos: l_posS,
-            //l_spotDir: l_spotDirS,
-            //l_cutoff: l_cutoffS,
-            //type: types
-            //}            
-        },
-        Materials:{ value:{
-                diffuse: { type:"4f", value:new THREE.Vector4(1,1,1,1)},
-                ambient: { type:"4f", value:new THREE.Vector4(1,1,1,1)},
-                specular: { type:"4f", value:new THREE.Vector4(1,1,1,1)},
-                emissive:{ type:"4f", value:new THREE.Vector4(1,1,1,1)},
-                shininess:{ type: "1f", value:10.0},
-                texCount: 2
-            }
-        }
-        */
-    }]);
-    //}
-    
-    uniforms =THREE.UniformsUtils.merge( [{
+    this.uniforms =THREE.UniformsUtils.merge( [{
             texture1: { type: 't', value: null},
             texture2: { type: 't', value: null},
             dirLightPos: {value: directional.getPositionInVector()},
             dirLightIntensity:{type: '1f', value:directional.intensity},
-            pointLightIntensity: {type: '1f', value: candles[0].intensity}
-            },
+            pointLightIntensity: {type: '1f', value: candles[0].intensity},
+            spotOn: {type: '1i', value:1},
+            directionalLightOn: {type: '1i', value:1},
+            pointLightOn: {type: '1i', value:1},
+            spotTarget: {value: car.getHeadlightsTarget()},
+            angle: {value: car.headlights[0].angle},
+            spotLightIntensity:{type: '1f',value: 6.},
+            texMode: {type: '1i', value:1}
+            },                                   
+            
             THREE.UniformsLib[ "lights" ]
                                          ]);
     
     
-    var vertexShader = document.getElementById('vertexShader').innerHTML;
-    var fragmentShader = document.getElementById('fragmentShader').innerHTML;
+    this.vertexShader = document.getElementById('vertexShader').innerHTML;
+    this.fragmentShader = document.getElementById('fragmentShader').innerHTML;
     
-    var material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
-        lights: true
+    this.material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms,
+        vertexShader: this.vertexShader,
+        fragmentShader: this.fragmentShader,
+        lights: true,
+        transparent: true,
+        castShadow: true,
+        receiveShadow: true
     });
     
-    material.uniforms.texture1.value =new THREE.ImageUtils.loadTexture("textures/stone.jpg");
-    material.uniforms.texture2.value =new THREE.ImageUtils.loadTexture("textures/water.jpg");
-
+    this.material.uniforms.texture1.value =new THREE.ImageUtils.loadTexture("textures/stone.jpg");
+    this.material.uniforms.texture2.value =new THREE.ImageUtils.loadTexture("textures/water.jpg");
     
-    var plane = new THREE.Mesh(geom, material);
+    this.plane = null;
+    if(simple) this.plane = new THREE.Mesh(geom, mat);
+    else this.plane = new THREE.Mesh(geom,material);
     
-    plane.setPosition = function(x,y,z){
-        this.position.x = x;
-        this.position.y = y;
-        this.position.z = z;        
+    this.setPosition = function(x,y,z){
+        this.plane.position.x = x;
+        this.plane.position.y = y;
+        this.plane.position.z = z;        
     }
-    plane.setRotation = function(x,y,z){
-        this.rotation.x = x;
-        this.rotation.y = y;
-        this.rotation.z = z;
+    this.setRotation = function(x,y,z){
+        this.plane.rotation.x = x;
+        this.plane.rotation.y = y;
+        this.plane.rotation.z = z;
     }
-    plane.setScale = function(x,y,z){
-        this.scale.x = x;
-        this.scale.y = y;
-        this.scale.z = z;
+    this.setScale = function(x,y,z){
+        this.plane.scale.x = x;
+        this.plane.scale.y = y;
+        this.plane.scale.z = z;
     }
-    plane.setTexture = function(path){
+    this.setTexture = function(path){
         var tex = new THREE.TextureLoader().load(path);
         tex.wrapS = THREE.RepeatWrapping;
         tex.wrapT = THREE.RepeatWrapping;
@@ -163,19 +239,17 @@ function createQuad(size_x,size_y){
         
         var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
         
-        this.material = newMat;
+        this.plane.material = newMat;
     }
     
 
-    plane.setTransparent = function(opacity){
-        this.material.transparent = true;
-        this.opacity = opacity;
+    this.setTransparent = function(opacity){
+        this.plane.material.transparent = true;
+        this.plane.opacity = opacity;
     }
     
-    plane.setMaterial
-    
-    plane.rotateX( - Math.PI/2);
-    return plane;
+    this.plane.rotateX( - Math.PI/2);
+    return this;
 }
 
 
@@ -205,7 +279,9 @@ function createTorus(radius, diameter){
         tex.wrapT = THREE.RepeatWrapping;
         tex.repeat.set(1,1);
         
-        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex});
+        var newMat = new THREE.MeshPhongMaterial({color:0xffffff, map: tex,
+        castShadow: true,
+        receiveShadow: true});
         
         this.material = newMat;
     }
@@ -229,7 +305,10 @@ function createTorus(radius, diameter){
 
 function createSphere(radius, wSeg, hSeg){
     var geom = new THREE.SphereGeometry(radius,wSeg,hSeg);
-    var mat  = new THREE.MeshPhongMaterial({color: 0x575a3f});
+    
+    var mat  = new THREE.MeshPhongMaterial({color: 0xffffff,
+        castShadow: true,
+        receiveShadow: true});
     var sphere = new THREE.Mesh(geom,mat);
  
     sphere.setPosition = function(x,y,z){
