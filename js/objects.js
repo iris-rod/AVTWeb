@@ -152,6 +152,8 @@ function Car(){
         return cop;
     }
     
+    this.getPosition = function(){ return [this.globalPos[0], this.globalPos[1], this.globalPos[2] ]; } 
+    
     return this;
 }
 
@@ -385,6 +387,5 @@ function Oranges(num,r){
     }
     
     return this;
-    
 }
 

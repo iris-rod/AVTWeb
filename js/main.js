@@ -1,5 +1,5 @@
 var scene, maskScene, reflectionsScene, camera, renderer, controls, gl;
-
+var collidableMeshList = [];
 //shaders
 var uniforms;
 
@@ -23,6 +23,7 @@ var l_posS, l_spotDirS, l_cutoffS, types;
 
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
+var xmov= 0;
 
 	init();
 var startTime	= Date.now();
@@ -41,7 +42,7 @@ function init()
     camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
 	camera.position.set(0,0,100);
 	scene.add(camera);
-    
+
     controls = new THREE.OrbitControls(camera);
     controls.update();
 		
@@ -67,6 +68,8 @@ function init()
     oranges = new Oranges(5,8);
     butters = new Butters(5,7,7,15);
   
+  
+    collidableMeshList.push(floor);
     /*
     stone = createCube(10,10,10);
    stone.setPosition(0,10,0); stone.setNormalMap("textures/normal.tga","textures/stone.jpg");
@@ -85,6 +88,9 @@ function init()
     drawObject(oranges);
     drawObject(butters);
   
+        /*StereoCameraEnabled(); 
+        initStereo();
+  */
         initHUD();
         setFog();
     
@@ -217,8 +223,9 @@ function animate(){
       renderForStereo();  
     else
       renderForNonStereo();
-  //controls.update();
+    controls.update();
     updateHUD();
+    checkCollisions();
     controls.update();
     checkMovements();
     checkLights();
@@ -353,8 +360,31 @@ function checkMovements(){
             launch = true;
         }
     }
-    table.mesh.material.uniforms.spotTarget.value = car.getHeadlightsTarget();
-    
+    table.mesh.material.uniforms.spotTarget.value = car.getHeadlightsTarget();    
+}
+
+function checkCollisions()
+{
+	var originPoint = car.body.position
+	
+	for (var vertexIndex = 0; vertexIndex < car.body.geometry.vertices.length; vertexIndex++)
+	{		
+		var localVertex = car.body.geometry.vertices[vertexIndex].clone();
+		var globalVertex = localVertex.applyMatrix4( car.body.matrix );
+		var directionVector = globalVertex.sub( car.body.position ); 
+		
+		var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+		var collisionResults = ray.intersectObjects( collidableMeshList );
+		if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+			console.log("hit");
+	}
+}
+
+function updateCarStereo()
+{
+  xmov += 0.01;
+  car.move(DIRECTIONS.FRONT);
+  car.setRotation(0, xmov, xmov);
 }
 
 function renderForStereo()
