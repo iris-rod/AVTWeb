@@ -1,8 +1,10 @@
 var scene, camera, renderer, controls;
 var car, light;
+var collidableMeshList = [];
 var stereoOn = false;
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
+var xmov= 0;
 
 var startTime	= Date.now();
 	init();
@@ -20,6 +22,7 @@ function init()
 		camera.position.set(0,0,100);
 		scene.add(camera);
     
+    
         controls = new THREE.OrbitControls(camera);
         controls.update();
 		
@@ -35,11 +38,17 @@ function init()
         light = new THREE.PointLight(0xffffff);
 		light.position.set(0, 0, 0);
 		scene.add(light);    
-        //var floor = createQuad(10,10);
-        //scene.add(floor);
-        var car = createCar();
+        var floor = createQuad(20,20);
+        floor.position.set(0, 0, -5);
+        //floor.setPosition(-10, 10, 10);
+        scene.add(floor);
+        collidableMeshList.push(floor);
+        car = createCar();
         addObject(car);
   
+        /*StereoCameraEnabled(); 
+        initStereo();
+  */
         initHUD();
         setFog();
        
@@ -64,9 +73,35 @@ function animate(){
       renderForStereo();  
     else
       renderForNonStereo();
-  //controls.update();
+    controls.update();
     updateHUD();
+    checkCollisions();
+  //updateCarStereo();
     
+}
+
+function checkCollisions()
+{
+	var originPoint = car.body.position
+	
+	for (var vertexIndex = 0; vertexIndex < car.body.geometry.vertices.length; vertexIndex++)
+	{		
+		var localVertex = car.body.geometry.vertices[vertexIndex].clone();
+		var globalVertex = localVertex.applyMatrix4( car.body.matrix );
+		var directionVector = globalVertex.sub( car.body.position ); 
+		
+		var ray = new THREE.Raycaster( originPoint, directionVector.clone().normalize() );
+		var collisionResults = ray.intersectObjects( collidableMeshList );
+		if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) 
+			console.log("hit");
+	}
+}
+
+function updateCarStereo()
+{
+  xmov += 0.01;
+  car.move(DIRECTIONS.FRONT);
+  car.setRotation(0, xmov, xmov);
 }
 
 function renderForStereo()

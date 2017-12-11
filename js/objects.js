@@ -22,6 +22,7 @@ function createCar(){
     for(var i = 0; i< 4; i++){
         car.wheels[i] = createTorus(2,0.5);
         car.wheels[i].setPosition(bodyPos[0]+wOffsetX[i],bodyPos[1],bodyPos[2]);
+        //collidableMeshList.push(car.wheels[i]);
     }
         
     car.setPosition = function(x,y,z){
@@ -41,7 +42,7 @@ function createCar(){
     car.move = function(direction){
         switch(direction){
             case DIRECTIONS.FRONT:
-                
+                this.body.translateX(0.02);
                 break;
             case DIRECTIONS.BACK:
                 
@@ -59,6 +60,8 @@ function createCar(){
     car.getCarX = function() { return this.globalPos[0]; }
     car.getCarY = function() { return this.globalPos[1]; }
     car.getCarZ = function() { return this.globalPos[2]; }
+    
+    car.getPosition = function(){ return [this.globalPos[0], this.globalPos[1], this.globalPos[2] ]; }    
     
     return car;
 }
