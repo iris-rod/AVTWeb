@@ -232,7 +232,6 @@ function Bilboards(num,size,r){
         }
         return cop;
     }
-    
     return this;
     
 }
@@ -388,3 +387,4 @@ function Oranges(num,r){
     return this;
     
 }
+

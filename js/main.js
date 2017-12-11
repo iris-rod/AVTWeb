@@ -10,6 +10,7 @@ var table_size_y = 100;
 var fireworks = [], fireworks_copy = [];
 var launch = false, canLaunch = true;
 
+var stereoOn = false;
 
 //lights
 var numCandles = 6;
@@ -18,6 +19,7 @@ var candles = new Array(numCandles);
 var directional = null;
 var headlightsOn = true, directionalOn = true, candlesOn = true;
 var l_posS, l_spotDirS, l_cutoffS, types;
+
 
 var WIDTH = window.innerWidth,
     HEIGHT = window.innerHeight;
@@ -64,6 +66,7 @@ function init()
     bilboards = new Bilboards(5,100,50);
     oranges = new Oranges(5,8);
     butters = new Butters(5,7,7,15);
+  
     /*
     stone = createCube(10,10,10);
    stone.setPosition(0,10,0); stone.setNormalMap("textures/normal.tga","textures/stone.jpg");
@@ -81,6 +84,9 @@ function init()
     drawObject(bilboards);
     drawObject(oranges);
     drawObject(butters);
+  
+        initHUD();
+        setFog();
     
 }
 
@@ -107,7 +113,7 @@ function drawLensFlare(){
     lensFlare.position.copy( flareLight.position );
     lensFlare.customUpdateCallback = lensFlareUpdateCallback;
     
-    scene.add( lensFlare );
+    scene.add( lensFlare );        
 }
 
 function lensFlareUpdateCallback( object ) {
@@ -183,7 +189,6 @@ function initCandles(){
         candles[i].name = "candles";
     }
 }
-
 function drawCandles(){
     for(var i = 0; i < numCandles; i++){
         scene.add(candles[i]);
@@ -199,10 +204,21 @@ function initDirectionalLight(){
 function drawDirectionalLight(){
     scene.add(directional);
 }
+function setFog()
+{
+   scene.fog = new THREE.Fog(0xffffff, 0, 500);
+   scene.fog.color.setHSL( 0.4, 0.4, 0.4 ); //fogColor
+}
 
 function animate(){
 
     requestAnimationFrame(animate);
+  if(stereoOn)
+      renderForStereo();  
+    else
+      renderForNonStereo();
+  //controls.update();
+    updateHUD();
     controls.update();
     checkMovements();
     checkLights();
@@ -338,6 +354,34 @@ function checkMovements(){
         }
     }
     table.mesh.material.uniforms.spotTarget.value = car.getHeadlightsTarget();
+    
+}
+
+function renderForStereo()
+{
+  camera.lookAt( light.position);//car.globalPos );
+  effect.render( scene, camera );
+}
+
+function renderForNonStereo()
+{
+  renderer.render(scene, camera); 
+}
+/********************HUD display**************************/
+function initHUD()
+{
+  document.getElementById("numberOfLives").innerHTML = initialNumberOfLives;
+  document.getElementById("numberOfPoints").innerHTML = initialNumberOfPoints;
+  
+  LivesLeft = initialNumberOfLives;
+  currentPoints = initialNumberOfPoints;
+  
+}
+
+//talvez usar listener
+function updateHUD()
+{
+  //document.addEventListener()
 }
 
 

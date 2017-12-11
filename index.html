@@ -4,6 +4,37 @@
 <head>
   <title>AVT in WebGL</title>
   <meta charset="utf-8">
+  
+  <style>
+    .hud{ 
+      position: fixed;
+      left: 33%;
+      top: 0px;
+      width: 33%;
+      z-index: 1;
+    }
+    
+    .hudElement{
+      position: inherit;
+      width: inherit;
+      border: 1px solid aqua;
+      border-style: groove;
+      background-color: black;
+    }
+    
+    .hudText{
+      width: 50px;
+      font-family: "Courier New";
+      color: aqua;
+    }
+    
+    .hudValue{
+      font-family: "Courier New";
+      color: aqua;
+      text-align: left;
+    }
+  </style>
+  
 </head>
 <body style="margin: 0;">
   <script src="js/three.min.js"></script>
@@ -211,15 +242,32 @@
         }
     </script>
     
+  <script src="js/libs/StereoEffect.js"></script>
   <script src="js/globalConstAndEnums.js"></script>
   <script src="js/OrbitControls.js"></script>
   <script src="js/TGALoader.js"></script>
+
+  <div class="hud" style="color:#00FF00">
+    <table class="hudElement">
+      <tr> 
+        <td class="hudText">Lives: </td>
+        <td class="hudValue" id="numberOfLives"> </td>
+        <td class="hudText">Points: </td>
+        <td class="hudValue" id="numberOfPoints"> </td>
+      </tr>
+    </table>
+  </div>
+  
+  
+<!-- scripts -->
+
   <script src="js/basic_geometry.js"></script>
   <script src="js/lights.js"></script>
   <script src="js/objects.js"></script>
   <script src="js/camera.js"></script>
   <script src="js/inputManager.js"></script>
   <script src="js/main.js"></script>
+ <!-- end of scripts --> 
 </body>
 </html>
 
