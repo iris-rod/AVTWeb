@@ -61,7 +61,7 @@ function initStereo()
 
     effect = new THREE.StereoEffect( renderer );
     effect.setSize( window.innerWidth, window.innerHeight ); 
-  
+    //scene.add(camera);
     updateController();
 }
 //update the camera being used in the controller
