@@ -68,8 +68,10 @@ function init()
     oranges = new Oranges(5,8);
     butters = new Butters(5,7,7,15);
   
-  
-    collidableMeshList.push(floor);
+    for(var i = 0; i < butters.objects.length; i++){
+        collidableMeshList.push(butters.objects[i]);
+        
+    }
     /*
     stone = createCube(10,10,10);
    stone.setPosition(0,10,0); stone.setNormalMap("textures/normal.tga","textures/stone.jpg");
@@ -365,7 +367,7 @@ function checkMovements(){
 
 function checkCollisions()
 {
-	var originPoint = car.body.position
+	var originPoint = car.body.position;
 	
 	for (var vertexIndex = 0; vertexIndex < car.body.geometry.vertices.length; vertexIndex++)
 	{		

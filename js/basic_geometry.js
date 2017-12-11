@@ -3,7 +3,7 @@ var lights;
 function createCube(size_x,size_y,size_z){
     
   var geometry = new THREE.CubeGeometry(size_x,size_y,size_z);
-  var mate = new THREE.MeshPhongMaterial({ color: 0x00ffff});
+  var mate = new THREE.MeshPhongMaterial({ color: 0x00ffff, side: THREE.DoubleSide});
   mate.fog = true;
   var cube = new THREE.Mesh(geometry, mate);
     
